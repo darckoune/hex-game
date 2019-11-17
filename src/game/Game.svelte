@@ -43,4 +43,6 @@
     <button on:click={connect}>Connect</button>
 </div>
 
+{#if connectionToHost || !connectionToHost}
 <Board gameState={gameState} on:play={sendPlayAction}/>
+{/if}

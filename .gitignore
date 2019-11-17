@@ -61,4 +61,4 @@ typings/
 .next
 
 # dist folder
-public/
+public/bundle*

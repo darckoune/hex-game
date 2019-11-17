@@ -2,6 +2,7 @@
     import * as Honeycomb from 'honeycomb-grid';
     import { SVG } from '@svgdotjs/svg.js'
     import { onMount, createEventDispatcher } from 'svelte';
+    import { BOARD_SIZE, PLAYER_COLORS } from '../../constants';
 
     let targetElement;
     let Hex;
@@ -29,6 +30,29 @@
                     .fill('none')
                     .stroke({ width: 1, color: '#999' })
                     .translate(x, y)
+
+                if (this.q === 0) {
+                    this.renderEdges(draw, [2,3,4], PLAYER_COLORS[2]);
+                } else if (this.q === BOARD_SIZE - 1) {
+                    this.renderEdges(draw, [5,0,1], PLAYER_COLORS[2]);
+                }
+                
+                if (this.r === 0) {
+                    this.renderEdges(draw, [4,5,0], PLAYER_COLORS[1]);
+                } else if (this.r === BOARD_SIZE - 1) {
+                    this.renderEdges(draw, [1,2,3], PLAYER_COLORS[1]);
+                }
+
+            },
+
+            renderEdges(draw, cornerIndexes, color) {
+                const { x, y } = this.toPoint()
+                const corners = this.corners()
+                
+                draw.polyline(cornerIndexes.map(cornerIndex => [corners[cornerIndex].x, corners[cornerIndex].y]))
+                    .fill('none')
+                    .stroke({ width: 3, color })
+                    .translate(x, y)
             },
 
             setPlayerPiece(playerPiece) {
@@ -42,11 +66,11 @@
                 switch(this.playerPiece) {
                     case 1:
                         this.draw
-                            .fill({ opacity: 1, color: 'aquamarine' });
+                            .fill({ opacity: 1, color: PLAYER_COLORS[1] });
                         break;
                     case 2:
                         this.draw
-                            .fill({ opacity: 1, color: 'red' })
+                            .fill({ opacity: 1, color: PLAYER_COLORS[2] })
                         break;
                     default:
                         this.draw
@@ -58,8 +82,8 @@
 
         Grid = Honeycomb.defineGrid(Hex);
         grid = Grid.parallelogram({ 
-            width: 5, 
-            height: 5,
+            width: BOARD_SIZE, 
+            height: BOARD_SIZE,
             onCreate(hex) {
                 hex.render(draw)
             }

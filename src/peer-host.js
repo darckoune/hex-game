@@ -1,5 +1,6 @@
 import Peer from 'peerjs';
 import * as Honeycomb from 'honeycomb-grid';
+import { BOARD_SIZE } from './constants';
 
 export class PeerHost {
     constructor() {
@@ -37,8 +38,8 @@ export class PeerHost {
         const Grid = Honeycomb.defineGrid();
         const grid = [];
         Grid.parallelogram({ 
-            width: 5, 
-            height: 5
+            width: BOARD_SIZE, 
+            height: BOARD_SIZE
         })
         .forEach(hex => {
             grid.push({
@@ -68,11 +69,14 @@ export class PeerHost {
     }
 
     handleAction(conn, action, data) {
+        // if (!this.playerCount() !== 2) return;
         const player = this.getPlayerFromConnection(conn);
         if (!player) return;
         switch (action) {
             case 'play':
+                if (player.playerId !== this.gameState.playerTurn) return;
                 this.gameState.grid.find(item => data.x === item.x && data.y === item.y).playerPiece = player.playerId;
+                this.gameState.playerTurn = (this.gameState.playerTurn % this.playerCount()) + 1
                 this.broadcastGameState();
                 break;
             default:
@@ -92,5 +96,9 @@ export class PeerHost {
 
     getPlayerFromConnection(conn) {
         return this.players.find(p => p.peerId === conn.peer);
+    }
+
+    playerCount() {
+        return this.players.length;
     }
 }
