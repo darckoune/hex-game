@@ -44,5 +44,5 @@
 </div>
 
 {#if connectionToHost || !connectionToHost}
-<Board gameState={gameState} on:play={sendPlayAction}/>
+    <Board gameState={gameState} on:play={sendPlayAction}/>
 {/if}

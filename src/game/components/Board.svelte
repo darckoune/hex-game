@@ -121,12 +121,15 @@
         width: 100%;
         height: 100%;
     }
+    .flex-1 {
+        flex: 1;
+    }
 </style>
 
-<svg 
-    bind:this={targetElement} 
-    on:click={clickHex}
-    class="grid">
-</svg>
-
-<div>{gameState}</div>
+<div class="flex-1">
+    <svg 
+        bind:this={targetElement} 
+        on:click={clickHex}
+        class="grid">
+    </svg>
+</div>
