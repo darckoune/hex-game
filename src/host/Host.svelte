@@ -8,9 +8,17 @@
     function createGameHost() {
         host.start().then(id => hostId = id);
     }
+
+    function restartGame() {
+        host.resetGame();
+    }
 </script>
 
 <h1>Host</h1>
 
-<button on:click={createGameHost}>Create a game</button>
+{#if !hostId}
+    <button on:click={createGameHost}>Create a host server and start game</button>
+{:else}
+    <button on:click={restartGame}>Restart the game</button>
+{/if}
 <p>Id : {hostId}</p>

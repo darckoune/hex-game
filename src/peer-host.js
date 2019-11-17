@@ -51,7 +51,12 @@ export class PeerHost {
         this.gameState = {
             playerTurn: 1,
             grid
-        }
+        };
+    }
+
+    resetGame() {
+        this.createGame();
+        this.broadcastGameState();
     }
 
     handleRequest(conn, request) {
@@ -71,6 +76,7 @@ export class PeerHost {
     handleAction(conn, action, data) {
         // if (!this.playerCount() !== 2) return;
         const player = this.getPlayerFromConnection(conn);
+        // console.log('handling action', action, data);
         if (!player) return;
         switch (action) {
             case 'play':

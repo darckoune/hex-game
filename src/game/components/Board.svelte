@@ -22,14 +22,14 @@
             playerPiece: null,
 
             render(draw) {
-                const { x, y } = this.toPoint()
-                const corners = this.corners()
+                const { x, y } = this.toPoint();
+                const corners = this.corners();;
 
                 this.draw = draw
                     .polygon(corners.map(({ x, y }) => `${x},${y}`))
                     .fill('none')
                     .stroke({ width: 1, color: '#999' })
-                    .translate(x, y)
+                    .translate(x, y);
 
                 if (this.q === 0) {
                     this.renderEdges(draw, [2,3,4], PLAYER_COLORS[2]);
@@ -46,13 +46,13 @@
             },
 
             renderEdges(draw, cornerIndexes, color) {
-                const { x, y } = this.toPoint()
-                const corners = this.corners()
+                const { x, y } = this.toPoint();
+                const corners = this.corners();
                 
                 draw.polyline(cornerIndexes.map(cornerIndex => [corners[cornerIndex].x, corners[cornerIndex].y]))
                     .fill('none')
                     .stroke({ width: 3, color })
-                    .translate(x, y)
+                    .translate(x, y);
             },
 
             setPlayerPiece(playerPiece) {
@@ -70,11 +70,11 @@
                         break;
                     case 2:
                         this.draw
-                            .fill({ opacity: 1, color: PLAYER_COLORS[2] })
+                            .fill({ opacity: 1, color: PLAYER_COLORS[2] });
                         break;
                     default:
                         this.draw
-                            .fill({ opacity: 1, color: 'none' })
+                            .fill({ opacity: 1, color: 'none' });
                         break;
                 }
             }
@@ -85,16 +85,17 @@
             width: BOARD_SIZE, 
             height: BOARD_SIZE,
             onCreate(hex) {
-                hex.render(draw)
+                hex.render(draw);
             }
         });
     });
 
-    function clickHex({ offsetX, offsetY }) {
-        const hexCoordinates = Grid.pointToHex([offsetX, offsetY])
-        const clickedHex = grid.get(hexCoordinates)
-
-        if (clickedHex) {
+    function clickHex(event) {
+        const offsetX = event.pageX - targetElement.getBoundingClientRect().left - window.scrollX;
+        const offsetY = event.pageY - targetElement.getBoundingClientRect().top  - window.scrollY;
+        const hexCoordinates = Grid.pointToHex([offsetX, offsetY]);
+        const clickedHex = grid.get(hexCoordinates);
+        if (clickedHex && !clickedHex.playerPiece) {
             dispatch('play', clickedHex);
         }
     }
