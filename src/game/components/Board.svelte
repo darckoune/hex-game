@@ -1,17 +1,20 @@
 <script>
     import * as Honeycomb from 'honeycomb-grid';
     import { SVG } from '@svgdotjs/svg.js'
-    import { onMount } from 'svelte';
+    import { onMount, createEventDispatcher } from 'svelte';
 
     let targetElement;
     let Hex;
     let Grid;
     let grid;
-    const gridState = [];
+
+    export let gameState = null;
+    const dispatch = createEventDispatcher();
+
+    $: updateGameState(gameState);
 
     onMount(() => {
         const draw = SVG(targetElement);
-        console.log('initialdraw', draw);
 
         Hex = Honeycomb.extendHex({
             size: 30,
@@ -61,8 +64,6 @@
                 hex.render(draw)
             }
         });
-
-        const corners = Hex().corners();
     });
 
     function clickHex({ offsetX, offsetY }) {
@@ -70,21 +71,18 @@
         const clickedHex = grid.get(hexCoordinates)
 
         if (clickedHex) {
-            const data = grid.map(hex => {
-                return {
-                    x: hex.x,
-                    y: hex.y,
-                    playerPiece: hex.playerPiece
-                };
-            })
-            data.find(item => item.x === clickedHex.x && item.y === clickedHex.y).playerPiece = Math.floor(Math.random() * 2 + 1);
-            console.log('mapped grid', data)
-            updateGrid(data);
+            dispatch('play', clickedHex);
         }
     }
 
-    function updateGrid (data) {
-        data.forEach(hexData => {
+    function updateGameState(state) {
+        console.log('updating state !', state);
+        if (!state) return;
+        updateGrid(state.grid);
+    }
+
+    function updateGrid (gridData) {
+        gridData.forEach(hexData => {
             const hex = grid.get({ x: hexData.x, y: hexData.y });
             if (hex) {
                 hex.setPlayerPiece(hexData.playerPiece);
@@ -105,3 +103,5 @@
     on:click={clickHex}
     class="grid">
 </svg>
+
+<div>{gameState}</div>
