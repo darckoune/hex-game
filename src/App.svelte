@@ -9,6 +9,7 @@
 		width: 100%;
 		display: flex;
 		flex-direction: column;
+		overflow-y: auto;
 	}
 	.container div {
 		padding: 10px;

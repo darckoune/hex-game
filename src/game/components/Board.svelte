@@ -88,6 +88,8 @@
                 hex.render(draw);
             }
         });
+
+        forceSVGSizeToMatchContent();
     });
 
     function clickHex(event) {
@@ -114,13 +116,16 @@
             }
         })
     }
+
+    function forceSVGSizeToMatchContent() {
+        const bbox=targetElement.getBBox();
+        targetElement.setAttribute("viewBox", (bbox.x-10)+" "+(bbox.y-10)+" "+(bbox.width+20)+" "+(bbox.height+20));
+        targetElement.setAttribute("width", (bbox.width+20)  + "px");
+        targetElement.setAttribute("height",(bbox.height+20) + "px");
+    }
 </script>
 
 <style>
-    .grid {
-        width: 100%;
-        height: 100%;
-    }
     .flex-1 {
         flex: 1;
     }
@@ -129,7 +134,6 @@
 <div class="flex-1">
     <svg 
         bind:this={targetElement} 
-        on:click={clickHex}
-        class="grid">
+        on:click={clickHex}>
     </svg>
 </div>
