@@ -31,6 +31,10 @@ export class PeerHost {
                         this.handleAction(conn, data.action, data.data);
                     }
                 });
+                conn.on('close', () => {
+                    this.players.splice(this.players.indexOf(this.getPlayerFromConnection(conn)), 1);
+                    this.broadcastPlayers();
+                });
                 this.broadcastPlayers();
             });
         });

@@ -1,5 +1,6 @@
 <script>
     import Board from './components/Board.svelte';
+    import PlayersList from './components/PlayersList.svelte';
     import Peer from 'peerjs';
 
     let connectionToHost = null;
@@ -10,6 +11,12 @@
     let players = [];
 
     const peer = new Peer();
+
+    window.addEventListener("beforeunload", function (e) {
+        if (connectionToHost) {
+            connectionToHost.close();
+        }
+    }, false);
 
     function connect() {
         connectionToHost = peer.connect(hostId);
@@ -69,15 +76,10 @@
 {#if connectionToHost || !connectionToHost}
 <div class="horizontal-flex">
     <div>
-        <Board gameState={gameState} players={players} on:play={sendPlayAction}/>
+        <Board {gameState} {players} on:play={sendPlayAction}/>
     </div>
     <div class="flex-1">
-        <h2>Players</h2>
-        <ul>
-            {#each players as player}
-            <li>{player.playerId} : {player.name}</li>
-            {/each}
-        </ul>
+        <PlayersList {players} />
     </div>
 </div>   
 {/if}
