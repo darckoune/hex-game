@@ -10,6 +10,7 @@
     let grid;
 
     export let gameState = null;
+    export let players = [];
     const dispatch = createEventDispatcher();
 
     $: updateGameState(gameState);
@@ -93,6 +94,7 @@
     });
 
     function clickHex(event) {
+        if (gameState.win) return;
         const offsetX = event.pageX - targetElement.getBoundingClientRect().left - window.scrollX;
         const offsetY = event.pageY - targetElement.getBoundingClientRect().top  - window.scrollY;
         const hexCoordinates = Grid.pointToHex([offsetX, offsetY]);
@@ -119,21 +121,19 @@
 
     function forceSVGSizeToMatchContent() {
         const bbox=targetElement.getBBox();
-        targetElement.setAttribute("viewBox", (bbox.x-10)+" "+(bbox.y-10)+" "+(bbox.width+20)+" "+(bbox.height+20));
-        targetElement.setAttribute("width", (bbox.width+20)  + "px");
-        targetElement.setAttribute("height",(bbox.height+20) + "px");
+        targetElement.setAttribute("viewBox", (bbox.x)+" "+(bbox.y)+" "+(bbox.width)+" "+(bbox.height));
+        targetElement.setAttribute("width", (bbox.width)  + "px");
+        targetElement.setAttribute("height",(bbox.height) + "px");
     }
 </script>
 
 <style>
-    .flex-1 {
-        flex: 1;
+    svg {
+        overflow: visible;
     }
 </style>
 
-<div class="flex-1">
-    <svg 
-        bind:this={targetElement} 
-        on:click={clickHex}>
-    </svg>
-</div>
+<svg 
+    bind:this={targetElement} 
+    on:click={clickHex}>
+</svg>

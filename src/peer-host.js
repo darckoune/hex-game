@@ -20,7 +20,8 @@ export class PeerHost {
                 this.connections.push(conn);
                 this.players.push({
                     peerId: conn.peer,
-                    playerId: this.players.length ? Math.max(this.players.map(p  => p.playerId)) + 1 : 1
+                    playerId: this.players.length ? Math.max(this.players.map(p  => p.playerId)) + 1 : 1,
+                    name: 'No name'
                 });
                 conn.on('data', (data) => {
                     if (data.request) {
@@ -30,26 +31,24 @@ export class PeerHost {
                         this.handleAction(conn, data.action, data.data);
                     }
                 });
+                this.broadcastPlayers();
             });
         });
     }
 
     createGame() {
-        const Grid = Honeycomb.defineGrid();
-        const grid = [];
-        Grid.parallelogram({ 
+        const Grid = Honeycomb.defineGrid(
+            Honeycomb.extendHex({
+                playerPiece: null
+            })
+        );
+        const grid = Grid.parallelogram({ 
             width: BOARD_SIZE, 
             height: BOARD_SIZE
-        })
-        .forEach(hex => {
-            grid.push({
-                x: hex.x,
-                y: hex.y,
-                playerPiece: null
-            });
-        })
+        });
         this.gameState = {
             playerTurn: 1,
+            win: null,
             grid
         };
     }
@@ -64,7 +63,13 @@ export class PeerHost {
             case 'state':
                 conn.send({
                     type: 'state',
-                    data: this.gameState
+                    data: this.getSendableGameState()
+                });
+                break;
+            case 'players':
+                conn.send({
+                    type: 'players',
+                    data: this.getSendablePlayers()
                 });
                 break;
             default:
@@ -81,7 +86,10 @@ export class PeerHost {
         switch (action) {
             case 'play':
                 if (player.playerId !== this.gameState.playerTurn) return;
-                this.gameState.grid.find(item => data.x === item.x && data.y === item.y).playerPiece = player.playerId;
+                this.gameState.grid.get({ x: data.x, y: data.y }).playerPiece = player.playerId;
+                if (this.checkVictory(player)) {
+                    this.gameState.win = player.playerId;
+                }
                 this.gameState.playerTurn = (this.gameState.playerTurn % this.playerCount()) + 1
                 this.broadcastGameState();
                 break;
@@ -95,8 +103,41 @@ export class PeerHost {
         this.connections.forEach(conn => {
             conn.send({
                 type: 'state',
-                data: this.gameState
+                data: this.getSendableGameState()
             });
+        })
+    }
+
+    getSendableGameState() {
+        const sendableGrid = [];
+        this.gameState.grid.forEach(hex => {
+            sendableGrid.push({
+                x: hex.x,
+                y: hex.y,
+                playerPiece: hex.playerPiece
+            });
+        });
+        return {
+            ...this.gameState,
+            grid: sendableGrid
+        };
+    }
+
+    broadcastPlayers() {
+        this.connections.forEach(conn => {
+            conn.send({
+                type: 'players',
+                data: this.getSendablePlayers()
+            })
+        })
+    }
+
+    getSendablePlayers() {
+        return this.players.map(player => {
+            return {
+                playerId: player.playerId,
+                name: player.name
+            }
         })
     }
 
@@ -106,5 +147,42 @@ export class PeerHost {
 
     playerCount() {
         return this.players.length;
+    }
+
+    checkVictory(player) {
+        let startLine;
+        switch (player.playerId) {
+            case 1:
+                startLine = 'r';
+                break;
+            case 2:
+                startLine = 'q';
+                break;
+        }
+
+        const startingHexes = this.gameState.grid
+            .filter(hex => hex[startLine] === 0)
+            .filter(hex => hex.playerPiece === player.playerId);
+
+        for (const startingHex of startingHexes) {
+            const hexToExplore = [startingHex];
+            const exploredHex = [];
+            
+            while (hexToExplore.length) {
+                const exploring = hexToExplore.pop();
+                if (exploring[startLine] === BOARD_SIZE - 1) {
+                    return true
+                }
+                const newHexesToExplore = this.gameState.grid.neighborsOf(exploring)
+                    .filter(neighbor => !!neighbor)
+                    .filter(neighbor => exploredHex.findIndex(e => e.x === neighbor.x && e.y === neighbor.y) === -1)
+                    .filter(neighbor => hexToExplore.findIndex(e => e.x === neighbor.x && e.y === neighbor.y) === -1)
+                    .filter(neighbor => neighbor.playerPiece === player.playerId);
+                hexToExplore.push(...newHexesToExplore);
+                exploredHex.push(exploring);
+            }
+        }
+
+        return false;
     }
 }

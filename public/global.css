@@ -62,3 +62,8 @@ button:active {
 button:focus {
 	border-color: #666;
 }
+
+button:disabled {
+	color: #666;
+	background-color: #ddd;
+}
